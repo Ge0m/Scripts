@@ -1,0 +1,43 @@
+#!/bin/bash
+# This program relocates files to a wastebasket instead of deleting them permanently.
+# Author: Geldi Omeri
+
+#Checking if WasteBasket exists yet or not and creating it if it doesn't
+if [ -d $HOME/WasteBasket ]; then
+        echo ""
+else
+	#creating the /WasketBasket directory
+        mkdir $HOME/WasteBasket
+fi
+
+#checking if a filename was entered for removal
+if [ $# != 1 ]; then
+        echo "Error! Filename not entered. Usage: myrm fileName"
+        exit 1
+else
+	#checking if a valid filename was entered 
+        if [ -f $1 ]; then
+		#checking if there is already a file with the same name in /WasteBasket
+                if [ -f $HOME/WasteBasket/$1 ]; then
+			#adding a random number to filename if the name is already used
+                        mv $1 $HOME/WasteBasket/$1.$RANDOM > /dev/null 2>&1
+                else
+			#moving the file to /WasteBasket
+                        mv $1 $HOME/WasteBasket > /dev/null 2>&1
+                fi
+		#Check if the mv command worked
+		if [ $? = 0 ]; then
+			echo "File sent to WasteBasket"
+		else
+			echo "Error! File failed to send to WasketBasket"
+		fi
+	else
+		#error if invalid filename was entered
+                echo "Error! Filename entered does not exist"
+                exit 1
+        fi
+fi
+
+
+exit 0
+

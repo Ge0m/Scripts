@@ -1,0 +1,160 @@
+#!/usr/bin/perl
+#A script written in perl that allows users to add a new login id with an interactive interface. The script sets everything up from user ID number to group ID number to setting up the bash shell for the new user.
+#Author: Geldi Omeri
+
+use warnings;
+
+#Gather user's input for id name
+print "Enter the login id name you wish to create:\n";
+$UNAME = <STDIN>;
+chomp $UNAME;
+print "\n";
+
+#checking character count of username
+$LCHECK=`echo -n $UNAME | wc -m`;
+
+#checking that the user inputted a 3 character long or longer username
+if ($LCHECK < 3){	
+	print "$UNAME is too short! Login ID needs to be at least 3 characters long!\n";
+	exit 65;
+}
+
+#checking how many times the username appears in passwd file and storing that count in a variable
+$UCHECK=`awk -F: '{print \$1}' /etc/passwd | grep -ciw "$UNAME"`;
+
+#if the username is already in use the user will be informed and the script will exit. If it isn't in use the user will continue forward with making it.
+if ($UCHECK < 1){
+	print "$UNAME is available!\n";
+	print "\n";
+}
+else {
+	print "$UNAME is already in use!\n";
+	exit 65;
+}
+
+
+#Gather the full name for the new user
+print "Enter the user's full name:\n";
+$FNAME = <STDIN>;
+chomp $FNAME;
+print "\n";
+
+#Check the word count of the full name the user entered
+$FNCHECK=`echo -n $FNAME | wc -m`;
+
+#if the word count is 0, the user didn't enter anything, then inform the user and exit the script
+if ($FNCHECK == 0){
+	print "Full name cannot be empty!\n";
+	exit 65;
+}
+
+#Gather the UID for the new user
+print "Enter a User ID number for the new user:\n";
+$UIDN = <STDIN>;
+chomp $UIDN;
+
+#check whether the UID inputted is an integer or not
+if ("$UIDN" =~ /^[+-]?\d+$/){
+	print "\n";
+}
+else{
+	#checking if the user selected an invalid UID or the default
+	if ("$UIDN" eq ""){
+		print "A default value will be set\n";
+		print "\n";
+	}
+	else{
+		print "$UIDN is not an integer!\n";
+		exit 65;
+	}
+}
+
+#checking how many times the user id number appears in passwd file and storing that count in a variable
+$UIDCHECK=`awk -F: '{print \$3}' /etc/passwd | grep -ciw "$UIDN"`;
+
+#if the user id number is already in use the user will be informed and the script will exit. If it isn't in use the user will continue forward with making it.
+if ($UIDCHECK < 1){
+        print "The selected UID is valid!\n";
+        print "\n";
+}
+else{
+        print "$UIDN is already in use!\n";
+	exit 65;
+}
+
+
+#Gather the GID for the new user
+print "Enter a Group ID number for the new user:\n";
+$GIDN = <STDIN>;
+chomp $GIDN;
+
+#Checking whether the GID is an integer or not
+if ("$GIDN" =~ /^[+-]?\d+$/){
+        print "\n";
+}
+else{
+	#checking whether the user inputted a valid GID or a default value
+	if ("$GIDN" eq ""){
+                print "A default value will be set.\n";
+	}
+	else{
+                print "$GIDN is not an integer!\n";
+		exit 65;
+	}
+}
+
+#checking how many times the group id appears in passwd file and storing that count in a variable
+$GIDCHECK=`awk -F: '{print \$4}' /etc/passwd | grep -ciw "$GIDN"`;
+
+#Checking that the user inputted a usable group id
+if ($GIDCHECK < 1){
+	#Check whether an empty GID was set
+	if ($GIDN eq ""){
+       		print "\n";
+	}
+	else{
+		print "$GIDN is not valid!\n";
+		exit 65;
+	}
+}
+else{
+        print "$GIDN is usable!\n";
+        print "\n";
+}
+
+
+#Gather the Linux Shell for the new user
+print "Enter one of the four available Linux Shells | c, ksh, sh, or bash:\n";
+$LSHELL = <STDIN>;
+chomp $LSHELL;
+
+#If the entered Linux Shell is one of the four usable options, everything passes through fine. If not the script exits
+if ("$LSHELL" eq "c" |  "$LSHELL" eq "ksh" | "$LSHELL" eq "sh" | "$LSHELL" eq "bash"){
+	print "\n";
+}
+else{
+	print "$LSHELL is not a valid Linux Shell!\n";
+	exit 65;
+}
+
+#checking whether the user inputted a UID and GID or left either or both empty, then creating the user with the relating command
+if ("$UIDN" ne "" & "$GIDN" ne ""){
+	`useradd $UNAME -m -c "$FNAME" -u $UIDN -g $GIDN -s /bin/$LSHELL`;
+	`echo "$UNAME:Password123" | chpasswd`;
+}
+elsif ("$UIDN" ne "" & "$GIDN" eq ""){
+	`useradd $UNAME -m -c "$FNAME" -u $UIDN -s /bin/$LSHELL`;
+	`echo "$UNAME:Password123" | chpasswd`;
+}
+elsif ("$UIDN" eq "" & "$GIDN" ne ""){
+	`useradd $UNAME -m -c "$FNAME" -g $GIDN -s /bin/$LSHELL`;
+        `echo "$UNAME:Password123" | chpasswd`;
+}
+elsif ("$UIDN" eq "" & "$GIDN" eq ""){
+	`useradd $UNAME -m -c "$FNAME" -s /bin/$LSHELL`;
+        `echo "$UNAME:Password123" | chpasswd`;
+}
+
+print "User $UNAME has been created\n";
+
+exit 0;

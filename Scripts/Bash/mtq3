@@ -1,0 +1,22 @@
+#!/bin/bash
+#This script allows you to monitor the system's memory usage and email them when the memory reaches a certain level.
+#Author: Geldi Omeri
+I=0
+while [ I=0 ]
+do
+	#finding the amount of memory usage and placing it in a variable. Everything is gathered in KiB.
+	memusage=`free -mt | grep Total | awk '{print $4}'`
+
+	#checking if the memory usage is less than 1000 megabytes and converting for Kibibytes.
+	if [ $memusage -lt 1000 ]; then
+
+		#Informing the user through the terminal of the low usage.
+		echo ""
+		echo "Free memory is below 1000 MB!"
+
+		#Sending an email with the low memory usage to the system admin.
+		echo "Free Memory Available: $memusage MB" | mailx -s "Low Memory Warning!" geldi@localhost
+	fi
+
+	sleep 60
+done

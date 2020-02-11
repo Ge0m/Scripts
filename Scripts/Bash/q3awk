@@ -1,0 +1,35 @@
+#!/bin/bash
+#Outputs the total time each user has spent on this machine
+#Author: Geldi Omeri
+
+#setting up an array for the login names
+declare -a logins
+
+#placed all the login names in the array
+logins=(`last | grep -v 'wtmp\|reboot' | awk '{print $1}' | sort -u`)
+
+#for loop through each login name
+for login in ${logins[@]};
+do
+	#echo the current login name
+	echo "$login"
+
+	#grabbed the hours of each login for the current login name	
+	hours=`last | grep "$login" | awk '{print $10}' | grep '[[:digit:]]' | awk '$1 !~ /\+/' | awk -F'(' '{print $2}' | awk -F')' '{print $1}' | awk -F: '{hours += $1} END {print hours}'`
+
+	#grabbed the minutes of each login for the current login name
+	minutes=`last | grep "$login" | awk '{print $10}' | grep '[[:digit:]]' | awk '$1 !~ /\+/' | awk -F'(' '{print $2}' | awk -F')' '{print $1}' | awk -F: '{min += $2} END {print min}'`
+
+	#calculated the total hours spent on the current user
+	Thours=$(($hours+$minutes/60))
+
+	#calculated the minutes spent after total hours were calculated
+	Tminutes=$(($minutes%60))
+
+	#print out the users hours and minutes spent on the system
+	echo "Total Time on System: $Thours hours and $Tminutes minutes"
+	echo ""
+
+done
+
+exit 0

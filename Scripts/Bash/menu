@@ -1,0 +1,163 @@
+#!/bin/bash
+#A Menu program with 7 options that the user can select from. The user can continue using the menu and picking options until option 7 is selected to exit the program. Each option calls a specific function to perform the required tasks through the use of case switches.
+#Author: Geldi Omeri
+
+#Function designed to make the program wait until the user hits enter in order to proceed
+function pe {
+	echo ""
+	echo -n "Press Enter to Continue"
+	read
+	clear
+}
+
+#Function designed to display server information to the user
+function sein {
+	
+	#Giving a pause before the info is shown
+	echo "Please Wait for Server's Information..."
+	sleep 1
+	
+	#Showcasing server CPU storage using top
+        echo "CPU Usage: "
+        top
+        echo ""
+	sleep 1
+
+	#Showcasing all current users logged into server
+	echo "Current Users Logged In: "
+	who
+	echo ""
+	sleep 2
+
+	#Showcasing RAM usage on server
+	echo "Memory Usage: "
+	free -h
+	echo ""
+	sleep 2
+
+	#Showcasing disk usage on server
+	echo "Disk Space: "
+	df -H
+	echo ""
+	sleep 2
+
+	#Showcasing the uptime of the server
+	echo ""
+	echo "Uptime: "
+	uptime
+	echo ""
+}
+
+#Function designed to showcase all files with a certain extension
+function fity {
+
+	#obtaining what extension the user wants to search for
+	echo "Enter a File Extension (ex: txt): "
+	read exts
+	echo ""
+	
+	#performing the task to find and display files
+	echo "Please wait as files are being found..."
+	sleep 1
+	find -iname *.$exts
+	echo ""
+}
+
+#Function designed to remove all files in a given directory with specific extensions or the name core
+function refi {
+
+	#informing the user what the program does
+	echo "All files in the given directory with extension .mp3 .jpg .gif .o and file named core will be deleted"
+	
+	#getting the directory the user wants files to be removed from
+	echo "Enter a Directory in Your Current Location: "
+	read dir
+	echo ""
+
+	#removing files from given directory
+	echo "Please wait as files are being removed..."
+	sleep 2
+	find $dir -name *.mp3 -type f -delete
+	find $dir -name *.JPG -type f -delete
+	find $dir -name *.gif -type f -delete
+	find $dir -name *.o -type f -delete
+	find $dir -name core -type f -delete
+	
+	#informing users that files have been removed
+	echo ""
+	echo "Files Removed"
+}
+
+#Function designed to create a directory with a given name and permissions 777 with a stickybit
+function cedi {
+
+	#getting what the user wants the directory to be named
+	echo "Enter a Directory Name: "
+	read dirname
+	echo ""
+	
+	#giving a pause to indicate that the task is being performed
+	echo "Please wait as the directory is being made..."
+	sleep 1
+	echo ""
+
+	#perfoming the task and informing the user of its completion
+	mkdir $dirname
+	chmod 1777 $dirname
+	echo "Directory Created"
+}
+
+#Function calls the Task program
+function cata {
+
+	#Informing the user and performing the task
+	echo "Calling Task Program..."
+	sleep 1
+	$HOME/Desktop/ITMO417/task
+}
+
+#Function compresses the Home director and places the compressed folder inside the home directory
+function cofi {
+
+	#informing user of the task and giving a pause
+	echo "Compressing Home Directory..."
+	sleep 1
+	
+	#performing the task and informing the user when it is completed
+	tar zcf $HOME/Home.tar.gz $HOME
+	echo ""
+	echo "Home Directory is Compressed"
+}
+
+#Creating menu that loops until the user enters the exit option
+sel=
+until [ "$sel" = "0" ]; do
+	echo "PROGRAM MENU"
+	echo "-------------------------"
+	echo "1 - Display Server Information"
+	echo "2 - Display Files of Certain Type in Current Directory and Sub-Directories"
+	echo "3 - Remove Files with Certain Extensions in the Current Directory"
+	echo "4 - Create a Directory with 777 permissions and stickybit"
+	echo "5 - Call the task program"
+	echo "6 - Compress All Files in Home Directory"
+	echo "7 - Exit"
+	echo "-------------------------"
+	echo "Enter the number for the function you want to perform: "
+	read sel
+	echo ""
+
+	#case switch that calls functions based on what menu option the user selected
+	case $sel in
+		1) sein ; pe ;;
+		2) fity ; pe ;;
+		3) refi ; pe ;;
+		4) cedi ; pe ;;
+		5) cata ; pe ;;
+		6) cofi ; pe ;;
+		7) exit ;;
+		*) echo "Please enter a valid number from 1-7"; pe
+	esac
+
+done
+
+exit 0

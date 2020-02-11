@@ -1,0 +1,144 @@
+#!/bin/bash
+#A script that allows users to add a new login id with an interactive interface. The script sets everything up from user ID number to group ID number to setting up the bash shell for the new user.
+#Author: Geldi Omeri
+
+#Gather user's input for id name
+echo "Enter the login id name you wish to create: "
+read UNAME
+echo ""
+
+#checking character count of username
+LCHECK=`echo -n $UNAME | wc -m`
+
+#checking that the user inputted a 3 character long or longer username
+if [ $LCHECK -lt 3 ]; then	
+	echo "$UNAME is too short! Login ID needs to be at least 3 characters long!"
+	exit 65
+fi	
+
+#checking how many times the username appears in passwd file and storing that count in a variable
+UCHECK=`awk -F: '{print $1}' /etc/passwd | grep -ciw "$UNAME"`
+
+#if the username is already in use the user will be informed and the script will exit. If it isn't in use the user will continue forward with making it.
+if [ $UCHECK -lt 1 ]; then
+	echo "$UNAME is available!"
+	echo ""
+else
+	echo "$UNAME is already in use!"
+	exit 65
+fi
+
+
+#Gather the full name for the new user
+echo "Enter the user's full name: "
+read FNAME
+echo ""
+
+#Check the word count of the full name the user entered
+FNCHECK=`echo -n $FNAME | wc -m`
+
+#if the word count is 0, the user didn't enter anything, then inform the user and exit the script
+if [ $FNCHECK -eq 0 ]; then
+	echo "Full name cannot be empty!"
+	exit 65
+fi
+
+#Gather the UID for the new user
+echo "Enter a User ID number for the new user: "
+read UIDN
+
+#check whether the UID inputted is an integer or not
+if [ "$UIDN" -eq "$UIDN" ] 2>/dev/null; then
+	echo ""
+else
+	#checking if the user selected an invalid UID or the default
+	if [ -z "$UIDN" ]; then
+		echo "A default value will be set."
+		echo ""
+	else
+		echo "$UIDN is not an integer!"
+		exit 65
+	fi
+fi
+
+#checking how many times the user id number appears in passwd file and storing that count in a variable
+UIDCHECK=`awk -F: '{print $3}' /etc/passwd | grep -ciw "$UIDN"`
+
+#if the user id number is already in use the user will be informed and the script will exit. If it isn't in use the user will continue forward with making it.
+if [ $UIDCHECK -lt 1 ]; then
+        echo "The selected UID is valid!"
+        echo ""
+else
+        echo "$UIDN is already in use!"
+        exit 65
+fi
+
+
+#Gather the GID for the new user
+echo "Enter a Group ID number for the new user: "
+read GIDN
+
+#Checking whether the GID is an integer or not
+if [ "$GIDN" -eq "$GIDN" ] 2>/dev/null; then
+        echo ""
+else
+	#checking whether the user inputted a valid GID or a default value
+        if [ -z "$GIDN" ]; then
+                echo "A default value will be set."
+        else
+                echo "$GIDN is not an integer!"
+                exit 65
+        fi
+fi
+
+#checking how many times the group id appears in passwd file and storing that count in a variable
+GIDCHECK=`awk -F: '{print $4}' /etc/passwd | grep -ciw "$GIDN"`
+
+#Checking that the user inputted a usable group id
+if [ $GIDCHECK -lt 1 ]; then
+	#Check whether an empty GID was set
+	if [ -z $GIDN ]; then
+       		echo ""
+	else
+		echo "$GIDN is not valid!"
+       		exit 65
+	fi
+else
+        echo "$GIDN is usable!"
+        echo ""
+fi
+
+
+#Gather the Linux Shell for the new user
+echo "Enter one of the four available Linux Shells | c, ksh, sh, or bash: "
+read LSHELL
+
+#If the entered Linux Shell is one of the four usable options, everything passes through fine. If not the script exits
+if [ "$LSHELL" = "c" -o  "$LSHELL" = "ksh" -o "$LSHELL" = "sh" -o "$LSHELL" = "bash" ]; then
+	echo ""
+else
+	echo "$LSHELL is not a valid Linux Shell!"
+	exit 65
+fi
+
+#checking whether the user inputted a UID and GID or left either or both empty, then creating the user with the relating command
+if [ ! -z "$UIDN" -a ! -z "$GIDN" ]; then
+	useradd $UNAME -m -c "$FNAME" -u $UIDN -g $GIDN -s /bin/$LSHELL
+	echo "$UNAME:Password123" | chpasswd
+
+elif [ ! -z "$UIDN" -a -z "$GIDN" ]; then
+	useradd $UNAME -m -c "$FNAME" -u $UIDN -s /bin/$LSHELL
+	echo "$UNAME:Password123" | chpasswd
+
+elif [ -z "$UIDN" -a ! -z  "$GIDN" ]; then
+	useradd $UNAME -m -c "$FNAME" -g $GIDN -s /bin/$LSHELL
+	echo "$UNAME:Password123" | chpasswd
+
+elif [ -z "$UIDN" -a -z "$GIDN" ]; then
+	useradd $UNAME -m -c "$FNAME" -s /bin/$LSHELL
+	echo "$UNAME:Password123" | chpasswd
+fi
+
+echo "User $UNAME has been created"
+
+exit 0
